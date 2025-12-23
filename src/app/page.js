@@ -6,11 +6,14 @@ import MainContent from '@/components/MainContent'
 import SearchModal from '@/components/SearchModal'
 import { useAppData } from '@/hooks/useAppData'
 import { useSearch } from '@/hooks/useSearch'
+import { apiService } from '@/services/apiService'
 
 export default function Home() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const [selectedTopicId, setSelectedTopicId] = useState(null)
   const [selectedTopicTitle, setSelectedTopicTitle] = useState('Trí Tuệ Xém Nhân Tạo')
+  const [relatedTopics, setRelatedTopics] = useState([])
+  const [loadingRelated, setLoadingRelated] = useState(false)
   
   const { categories, allTopics, sections, loading, error, loadSections } = useAppData()
   const { 
@@ -33,6 +36,20 @@ export default function Home() {
     setSelectedTopicId(topicId)
     setSelectedTopicTitle(topicTitle)
     await loadSections(topicId)
+    
+    // Load related topics
+    setLoadingRelated(true)
+    try {
+      const related = await apiService.getRelatedTopics(topicId)
+      // API trả về array of {topic: {...}, score: number}, cần extract topics
+      const topics = related.map(item => item.topic)
+      setRelatedTopics(topics)
+    } catch (err) {
+      console.error('Error loading related topics:', err)
+      setRelatedTopics([])
+    } finally {
+      setLoadingRelated(false)
+    }
   }
 
   useEffect(() => {
@@ -79,6 +96,9 @@ export default function Home() {
         sections={sections}
         selectedTopicId={selectedTopicId}
         onOpenSearch={openSearch}
+        relatedTopics={relatedTopics}
+        loadingRelated={loadingRelated}
+        onTopicClick={selectTopic}
       />
 
       <SearchModal

@@ -3,12 +3,16 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch, faInbox } from '@fortawesome/free-solid-svg-icons'
 import SectionCard from './SectionCard'
+import RelatedTopics from './RelatedTopics'
 
 export default function MainContent({ 
   topicTitle, 
   sections, 
   selectedTopicId,
-  onOpenSearch 
+  onOpenSearch,
+  relatedTopics,
+  loadingRelated,
+  onTopicClick
 }) {
   return (
     <main className="flex-1 flex flex-col min-w-0">
@@ -54,6 +58,18 @@ export default function MainContent({
                 <SectionCard key={section.id || index} section={section} />
               ))
             }
+            
+            {/* Related Topics Section */}
+            <RelatedTopics 
+              relatedTopics={relatedTopics}
+              loading={loadingRelated}
+              onTopicClick={(topicId) => {
+                const topic = relatedTopics.find(t => t.id === topicId)
+                if (topic) {
+                  onTopicClick(topicId, topic.title)
+                }
+              }}
+            />
           </div>
         )}
       </div>
