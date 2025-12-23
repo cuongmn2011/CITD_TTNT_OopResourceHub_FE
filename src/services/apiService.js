@@ -92,6 +92,17 @@ export const apiService = {
     }
   },
 
+  // Get related topics
+  async getRelatedTopics(topicId) {
+    try {
+      const response = await api.get(`/related-topics/${topicId}`)
+      return response.data
+    } catch (error) {
+      console.error(`Failed to fetch related topics for topic ${topicId}:`, error)
+      throw error
+    }
+  },
+
   // Health check
   async healthCheck() {
     try {
