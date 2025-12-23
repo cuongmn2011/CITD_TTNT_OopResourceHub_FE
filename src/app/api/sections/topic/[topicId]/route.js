@@ -4,7 +4,7 @@ export async function GET(request, { params }) {
   try {
     const topicId = params.topicId
 
-    const response = await fetch(`https://citd-ttnt-oop-resource-hub-be.vercel.app/api/v1/sections/topic/${topicId}`, {
+    const response = await fetch(`https://oopresourcehub-api-669515337272.asia-southeast1.run.app/api/v1/sections/topic/${topicId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

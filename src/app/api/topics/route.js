@@ -5,7 +5,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const categoryId = searchParams.get('category_id')
     
-    let url = 'https://citd-ttnt-oop-resource-hub-be.vercel.app/api/v1/topics/'
+    let url = 'https://oopresourcehub-api-669515337272.asia-southeast1.run.app/api/v1/topics/'
     if (categoryId) {
       url += `?category_id=${categoryId}`
     }

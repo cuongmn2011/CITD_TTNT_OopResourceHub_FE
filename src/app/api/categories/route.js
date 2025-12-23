@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    const response = await fetch('https://citd-ttnt-oop-resource-hub-be.vercel.app/api/v1/categories/', {
+    const response = await fetch('https://oopresourcehub-api-669515337272.asia-southeast1.run.app/api/v1/categories/', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
