@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import MainContent from '@/components/MainContent'
-import SearchBar from '@/components/SearchBar'
-import { useAppData } from '@/hooks/useAppData'
+import SearchModal from '@/components/SearchModal'
+import { useAppData } from '@/hooks/useAppData_new'
 import { useSearch } from '@/hooks/useSearch'
 import { apiService } from '@/services/apiService'
 
@@ -27,15 +27,17 @@ export default function Home() {
   } = useAppData()
   
   const { 
+    isSearchOpen, 
     searchQuery, 
     searchResults, 
     selectedIndex,
     isSearching,
+    openSearch, 
+    closeSearch, 
     setSearchQuery, 
     navigateResults,
-    selectResult,
-    forceSearch
-  } = useSearch()
+    selectResult
+  } = useSearch(categories, {})
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed)
@@ -62,13 +64,13 @@ export default function Home() {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault()
-        document.querySelector('input[placeholder*="Tìm kiếm"]')?.focus()
+        openSearch()
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
+  }, [openSearch])
 
   if (loading) {
     return (
@@ -88,31 +90,9 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-bg-color">
-      {/* Header with Category Tabs and Search */}
+      {/* Category Tabs - Horizontal Menu */}
       <div className="bg-white border-b border-border-color shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
-          {/* Search Bar Row */}
-          <div className="flex items-center gap-4 py-3 border-b border-gray-200">
-            <h1 className="font-bold text-xl text-blue-600 whitespace-nowrap">
-              OOP Hub
-            </h1>
-            <SearchBar
-              query={searchQuery}
-              results={searchResults}
-              selectedIndex={selectedIndex}
-              isSearching={isSearching}
-              onQueryChange={setSearchQuery}
-              onNavigate={navigateResults}
-              onSelect={selectResult}
-              onSelectTopic={selectTopic}
-              onForceSearch={forceSearch}
-              selectedCategory={selectedCategory}
-              onCategoryChange={handleCategorySelect}
-              categories={categories}
-            />
-          </div>
-          
-          {/* Category Tabs Row */}
           <div className="flex space-x-1 overflow-x-auto py-2">
             {categories.map((category) => (
               <button
@@ -148,9 +128,23 @@ export default function Home() {
           topicTitle={selectedTopic?.title || 'Chọn một chủ đề'}
           sections={sections}
           selectedTopicId={selectedTopic?.id}
+          onOpenSearch={openSearch}
           relatedTopics={relatedTopics}
           loadingRelated={loadingRelated}
           onTopicClick={selectTopic}
+        />
+
+        <SearchModal
+          isOpen={isSearchOpen}
+          query={searchQuery}
+          results={searchResults}
+          selectedIndex={selectedIndex}
+          isSearching={isSearching}
+          onClose={closeSearch}
+          onQueryChange={setSearchQuery}
+          onNavigate={navigateResults}
+          onSelect={selectResult}
+          onSelectTopic={selectTopic}
         />
       </div>
     </div>

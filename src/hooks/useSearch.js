@@ -1,111 +1,113 @@
 'use client'
 
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { apiService } from '@/services/apiService'
 
-export function useSearch(categories, allTopics) {
+export function useSearch() {
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [searchResults, setSearchResults] = useState([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchTrigger, setSearchTrigger] = useState(0)
 
   const openSearch = useCallback(() => {
     setIsOpen(true)
     setQuery('')
     setSelectedIndex(-1)
+    setSearchResults([])
   }, [])
 
   const closeSearch = useCallback(() => {
     setIsOpen(false)
     setQuery('')
     setSelectedIndex(-1)
+    setSearchResults([])
   }, [])
 
-  const removeVietnameseTones = (str) => {
-    return str.normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd')
-      .replace(/Đ/g, 'D')
-  }
-
-  const fuzzyMatch = (text, searchQuery) => {
-    if (!text || !searchQuery) return false
-    
-    const textLower = removeVietnameseTones(text.toLowerCase())
-    const queryLower = removeVietnameseTones(searchQuery.toLowerCase())
-    
-    // Exact match
-    if (textLower.includes(queryLower)) return true
-    
-    // Fuzzy match - sequential character matching
-    let queryIndex = 0
-    for (let i = 0; i < textLower.length && queryIndex < queryLower.length; i++) {
-      if (textLower[i] === queryLower[queryIndex]) {
-        queryIndex++
-      }
+  // Debounced search - gọi API sau khi người dùng ngừng gõ 600ms
+  useEffect(() => {
+    if (!query.trim()) {
+      setSearchResults([])
+      setIsSearching(false)
+      return
     }
+
+    setIsSearching(true)
+    const abortController = new AbortController()
     
-    return queryIndex === queryLower.length
-  }
+    const timeoutId = setTimeout(async () => {
+      try {
+        const response = await apiService.search(query, 20, abortController.signal)
+        console.log('Search API response:', response)
+        
+        // Transform API response to match frontend format
+        const results = []
 
-  const searchResults = useMemo(() => {
-    if (!query.trim()) return []
-
-    const results = []
-    const lowerQuery = query.toLowerCase()
-
-    // Search categories
-    categories.forEach(cat => {
-      if (fuzzyMatch(cat.name, lowerQuery)) {
-        results.push({
-          type: 'category',
-          id: cat.id,
-          title: cat.name,
-          meta: '',
-          topics: allTopics[cat.id] || []
-        })
-      }
-    })
-
-    // Search topics
-    for (const catId in allTopics) {
-      const categoryName = categories.find(c => c.id == catId)?.name || ''
-      
-      allTopics[catId].forEach(topic => {
-        if (fuzzyMatch(topic.title, lowerQuery) || 
-            (topic.short_definition && fuzzyMatch(topic.short_definition, lowerQuery))) {
-          results.push({
-            type: 'topic',
-            id: topic.id,
-            title: topic.title,
-            meta: categoryName,
-            data: topic
+        // Add topics
+        if (response.topics && Array.isArray(response.topics)) {
+          response.topics.forEach(topic => {
+            results.push({
+              type: 'topic',
+              id: topic.id,
+              title: topic.title,
+              meta: topic.category_name,
+              categoryId: topic.category_id,
+              data: topic,
+              score: topic.score
+            })
           })
         }
-      })
-    }
 
-    // Search sections
-    for (const catId in allTopics) {
-      allTopics[catId].forEach(topic => {
-        if (topic.sections) {
-          topic.sections.forEach(section => {
-            if (section.heading && fuzzyMatch(section.heading, lowerQuery)) {
-              results.push({
-                type: 'section',
-                id: section.id,
-                title: section.heading,
-                meta: `Trong topic: ${topic.title}`,
-                topicId: topic.id,
-                topicTitle: topic.title,
-                sectionId: section.id
-              })
-            }
+        // Add sections
+        if (response.sections && Array.isArray(response.sections)) {
+          response.sections.forEach(section => {
+            results.push({
+              type: 'section',
+              id: section.id,
+              title: section.heading,
+              meta: `Trong topic: ${section.topic_title}`,
+              topicId: section.topic_id,
+              topicTitle: section.topic_title,
+              sectionId: section.id,
+              score: section.score
+            })
           })
         }
-      })
-    }
 
-    return results
-  }, [query, categories, allTopics])
+        // Add categories
+        if (response.categories && Array.isArray(response.categories)) {
+          response.categories.forEach(cat => {
+            results.push({
+              type: 'category',
+              id: cat.id,
+              title: cat.title,
+              meta: cat.description || `${cat.topic_count} topics`,
+              score: cat.score
+            })
+          })
+        }
+
+        // Sort by score
+        results.sort((a, b) => (b.score || 0) - (a.score || 0))
+        
+        console.log('Transformed results:', results.length, results.slice(0, 5))
+        setSearchResults(results)
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Search error:', error)
+          setSearchResults([])
+        }
+      } finally {
+        setIsSearching(false)
+      }
+    }, 600)
+
+    return () => {
+      clearTimeout(timeoutId)
+      abortController.abort()
+    }
+  }, [query, searchTrigger])
 
   const navigateResults = useCallback((direction) => {
     if (searchResults.length === 0) return
@@ -128,15 +130,21 @@ export function useSearch(categories, allTopics) {
     setSelectedIndex(-1)
   }, [searchResults])
 
+  const forceSearch = useCallback(() => {
+    setSearchTrigger(prev => prev + 1)
+  }, [])
+
   return {
     isSearchOpen: isOpen,
     searchQuery: query,
     searchResults,
     selectedIndex,
+    isSearching,
     openSearch,
     closeSearch,
     setSearchQuery: setQuery,
     navigateResults,
-    selectResult
+    selectResult,
+    forceSearch
   }
 }
