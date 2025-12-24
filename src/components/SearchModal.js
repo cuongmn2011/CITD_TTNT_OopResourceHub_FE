@@ -9,7 +9,8 @@ import {
   faFolder,
   faBook,
   faFileAlt,
-  faSadTear
+  faSadTear,
+  faSpinner
 } from '@fortawesome/free-solid-svg-icons'
 
 export default function SearchModal({
@@ -17,6 +18,7 @@ export default function SearchModal({
   query,
   results,
   selectedIndex,
+  isSearching,
   onClose,
   onQueryChange,
   onNavigate,
@@ -127,12 +129,17 @@ export default function SearchModal({
               <p className="text-lg mb-4">Nhập để tìm kiếm topics, categories, hoặc sections</p>
               <div className="flex justify-center gap-3 flex-wrap">
                 <span className="px-3 py-1 bg-gray-100 rounded text-sm">
-                  Tip: Thử "keth" → "Kế thừa"
+                  Ví dụ: "Làm sao để hiểu OOP"
                 </span>
                 <span className="px-3 py-1 bg-gray-100 rounded text-sm">
                   Fuzzy search enabled
                 </span>
               </div>
+            </div>
+          ) : isSearching ? (
+            <div className="p-16 text-center text-gray-500">
+              <FontAwesomeIcon icon={faSpinner} className="text-3xl text-primary mb-4 animate-spin" />
+              <p className="text-lg">Đang tìm kiếm...</p>
             </div>
           ) : results.length === 0 ? (
             <div className="p-16 text-center text-gray-500">

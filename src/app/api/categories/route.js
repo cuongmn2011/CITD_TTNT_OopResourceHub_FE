@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
+import { API_ENDPOINT } from '@/config/api'
 
 export async function GET() {
   try {
-    const response = await fetch('https://oopresourcehub-api-669515337272.asia-southeast1.run.app/api/v1/categories/', {
+    const response = await fetch(`${API_ENDPOINT}/categories/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

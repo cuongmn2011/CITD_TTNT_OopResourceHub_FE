@@ -81,6 +81,17 @@ export const apiService = {
     }
   },
 
+  // Get single topic with details (sections, tags)
+  async getTopic(topicId) {
+    try {
+      const response = await api.get(`/topics/${topicId}`)
+      return response.data
+    } catch (error) {
+      console.error(`Failed to fetch topic ${topicId}:`, error)
+      throw error
+    }
+  },
+
   // Get sections for a topic
   async getSections(topicId) {
     try {
@@ -99,6 +110,24 @@ export const apiService = {
       return response.data
     } catch (error) {
       console.error(`Failed to fetch related topics for topic ${topicId}:`, error)
+      throw error
+    }
+  },
+
+  // Search with fuzzy matching
+  async search(query, limit = 20, signal = null) {
+    try {
+      const response = await api.get(
+        `/search?q=${encodeURIComponent(query)}&limit=${limit}`,
+        { signal }
+      )
+      return response.data
+    } catch (error) {
+      if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
+        console.log('Search request cancelled')
+        throw error
+      }
+      console.error(`Failed to search for "${query}":`, error)
       throw error
     }
   },

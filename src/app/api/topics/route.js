@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
+import { API_ENDPOINT } from '@/config/api'
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const categoryId = searchParams.get('category_id')
     
-    let url = 'https://oopresourcehub-api-669515337272.asia-southeast1.run.app/api/v1/topics/'
+    let url = `${API_ENDPOINT}/topics/`
     if (categoryId) {
       url += `?category_id=${categoryId}`
     }
