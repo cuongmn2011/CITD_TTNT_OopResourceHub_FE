@@ -27,17 +27,17 @@ export default function RelatedTopics({ relatedTopics, loading, onTopicClick }) 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {relatedTopics.map((topic) => (
+        {relatedTopics.filter(topic => topic && topic.id).map((topic) => (
           <button
             key={topic.id}
             onClick={() => onTopicClick(topic.id)}
             className="p-4 bg-white border-2 border-border-color rounded-lg hover:border-primary hover:shadow-md transition-all text-left group"
           >
             <h4 className="font-semibold text-text-primary group-hover:text-primary transition-colors mb-2">
-              {topic.title}
+              {topic.title || 'Untitled'}
             </h4>
             <p className="text-sm text-text-secondary line-clamp-2">
-              {topic.short_definition}
+              {topic.short_definition || 'No description'}
             </p>
           </button>
         ))}
