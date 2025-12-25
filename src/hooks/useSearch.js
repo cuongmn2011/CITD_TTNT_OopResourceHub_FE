@@ -44,7 +44,7 @@ export function useSearch() {
         // Transform API response to match frontend format
         const results = []
 
-        // Add topics
+        // Add topics (with tags if available)
         if (response.topics && Array.isArray(response.topics)) {
           response.topics.forEach(topic => {
             results.push({
@@ -53,7 +53,10 @@ export function useSearch() {
               title: topic.title,
               meta: topic.category_name,
               categoryId: topic.category_id,
-              data: topic,
+              data: {
+                ...topic,
+                tags: topic.tags || []  // Ensure tags array exists
+              },
               score: topic.score
             })
           })

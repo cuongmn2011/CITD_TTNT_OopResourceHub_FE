@@ -102,27 +102,16 @@ export default function SearchBar({
     inputRef.current?.blur()
     
     if (result.type === 'topic') {
-      // Check if need to switch category
-      if (result.categoryId && selectedCategory?.id !== result.categoryId) {
-        const targetCategory = categories.find(cat => cat.id === result.categoryId)
-        if (targetCategory) {
-          // Switch category first, then select topic after a small delay
-          onCategoryChange(targetCategory)
-          // Wait for category switch and topics load
-          setTimeout(() => {
-            onSelectTopic(result.id, result.title)
-          }, 500)
-        } else {
-          onSelectTopic(result.id, result.title)
-        }
-      } else {
-        onSelectTopic(result.id, result.title)
-      }
+      // Pass categoryId to onSelectTopic so it can switch category if needed
+      onSelectTopic(result.id, result.title, result.categoryId)
     } else if (result.type === 'category') {
       // For categories, just close the search - user can click category tab
       setIsOpen(false)
     } else if (result.type === 'section') {
-      onSelectTopic(result.topicId, result.topicTitle)
+      // For sections, get the topic's categoryId from results
+      const parentTopic = results.find(r => r.type === 'topic' && r.id === result.topicId)
+      const categoryId = parentTopic?.categoryId || null
+      onSelectTopic(result.topicId, result.topicTitle, categoryId)
     }
   }
 
@@ -260,6 +249,30 @@ export default function SearchBar({
                                 selectedIndex === globalIndex ? 'text-white/80' : 'text-gray-500'
                               }`}>
                                 {result.meta}
+                              </div>
+                            )}
+                            {/* Tags for topics */}
+                            {result.type === 'topic' && result.data?.tags && result.data.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {result.data.tags.slice(0, 3).map(tag => (
+                                  <span 
+                                    key={tag.id}
+                                    className={`inline-block px-2 py-0.5 text-[10px] rounded-full ${
+                                      selectedIndex === globalIndex 
+                                        ? 'bg-white/20 text-white' 
+                                        : 'bg-blue-50 text-blue-600 border border-blue-200'
+                                    }`}
+                                  >
+                                    #{tag.slug}
+                                  </span>
+                                ))}
+                                {result.data.tags.length > 3 && (
+                                  <span className={`text-[10px] ${
+                                    selectedIndex === globalIndex ? 'text-white/60' : 'text-gray-400'
+                                  }`}>
+                                    +{result.data.tags.length - 3}
+                                  </span>
+                                )}
                               </div>
                             )}
                           </div>

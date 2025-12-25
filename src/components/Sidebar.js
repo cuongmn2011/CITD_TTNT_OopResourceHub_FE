@@ -50,7 +50,7 @@ export default function Sidebar({
           </div>
         ) : (
           <div className="space-y-1">
-            {topics.map(topic => (
+            {topics.filter(topic => topic && topic.id).map(topic => (
               <div
                 key={topic.id}
                 className={`
@@ -60,16 +60,50 @@ export default function Sidebar({
                     : 'hover:bg-sidebar-hover'
                   }
                 `}
-                onClick={() => onSelectTopic(topic.id, topic.title)}
+                onClick={() => onSelectTopic(topic.id, topic.title || 'Untitled')}
               >
                 <div className="flex items-start">
                   <FontAwesomeIcon 
                     icon={faBook} 
                     className="mt-1 mr-3 text-sm flex-shrink-0" 
                   />
-                  <span className="text-sm font-medium leading-snug">
-                    {topic.title}
-                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium leading-snug mb-1">
+                      {topic.title || 'Untitled'}
+                    </div>
+                    {/* Tags */}
+                    {topic.tags && Array.isArray(topic.tags) && topic.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {topic.tags.filter(tag => tag && tag.id).slice(0, 2).map(tag => (
+                          <span
+                            key={tag.id}
+                            className={`
+                              text-[10px] px-2 py-0.5 rounded-full
+                              ${selectedTopicId === topic.id
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                              }
+                            `}
+                          >
+                            #{tag.slug || tag.name || 'tag'}
+                          </span>
+                        ))}
+                        {topic.tags.length > 2 && (
+                          <span
+                            className={`
+                              text-[10px] px-2 py-0.5 rounded-full
+                              ${selectedTopicId === topic.id
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-gray-700 text-gray-300'
+                              }
+                            `}
+                          >
+                            +{topic.tags.length - 2}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

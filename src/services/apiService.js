@@ -1,15 +1,23 @@
 import axios from 'axios'
+import { API_BASE_URL } from '@/config/api'
 
-const API_BASE_URL = '/api'
+// For Next.js proxy: use '/api' to go through Next.js rewrites (only for local backend)
+// For direct backend: use API_BASE_URL from config (for cloudrun/production)
+const USE_NEXTJS_PROXY = false // Set false to call backend directly
+
+const API_BASE = USE_NEXTJS_PROXY ? '/api' : API_BASE_URL
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_BASE,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   }
 })
+
+console.log(`[apiService] Using base URL: ${API_BASE}`)
+console.log(`[apiService] Proxy mode: ${USE_NEXTJS_PROXY ? 'Next.js rewrites' : 'Direct backend'}`)
 
 // Add request interceptor for debugging
 api.interceptors.request.use(

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import MainContent from '@/components/MainContent'
 import SearchBar from '@/components/SearchBar'
+import TagFilterPanel from '@/components/TagFilterPanel'
 import { useAppData } from '@/hooks/useAppData'
 import { useSearch } from '@/hooks/useSearch'
 import { apiService } from '@/services/apiService'
@@ -18,8 +19,12 @@ export default function Home() {
     selectedCategory,
     handleCategorySelect,
     topics,
+    allTopics,
+    selectedTags,
+    handleTagsChange,
     selectedTopic,
     handleTopicSelect,
+    selectTopicFromSearch,
     sections,
     loading,
     topicsLoading,
@@ -41,15 +46,21 @@ export default function Home() {
     setIsSidebarCollapsed(!isSidebarCollapsed)
   }
 
-  const selectTopic = async (topicId, topicTitle) => {
-    handleTopicSelect(topicId)
+  const selectTopic = async (topicId, topicTitle, categoryId = null) => {
+    // If categoryId provided (from search), use selectTopicFromSearch
+    if (categoryId) {
+      await selectTopicFromSearch(topicId, categoryId)
+    } else {
+      // Normal topic selection from sidebar
+      handleTopicSelect(topicId)
+    }
     
     // Load related topics
     setLoadingRelated(true)
     try {
       const related = await apiService.getRelatedTopics(topicId)
-      const topics = related.map(item => item.topic)
-      setRelatedTopics(topics)
+      // Backend returns List[TopicResponse] directly, not wrapped in {topic: ...}
+      setRelatedTopics(Array.isArray(related) ? related : [])
     } catch (err) {
       console.error('Error loading related topics:', err)
       setRelatedTopics([])
@@ -133,6 +144,13 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Tag Filter Panel */}
+      <TagFilterPanel
+        topics={allTopics}
+        selectedTags={selectedTags}
+        onTagsChange={handleTagsChange}
+      />
+
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
@@ -148,6 +166,7 @@ export default function Home() {
           topicTitle={selectedTopic?.title || 'Chọn một chủ đề'}
           sections={sections}
           selectedTopicId={selectedTopic?.id}
+          selectedTopic={selectedTopic}
           relatedTopics={relatedTopics}
           loadingRelated={loadingRelated}
           onTopicClick={selectTopic}
