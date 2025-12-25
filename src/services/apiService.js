@@ -59,7 +59,7 @@ export const apiService = {
   // Get all categories
   async getCategories() {
     try {
-      const response = await api.get('/categories')
+      const response = await api.get('/categories/')
       return response.data
     } catch (error) {
       console.error('Failed to fetch categories:', error)
@@ -70,7 +70,7 @@ export const apiService = {
   // Get all topics
   async getAllTopics() {
     try {
-      const response = await api.get('/topics')
+      const response = await api.get('/topics/')
       return response.data
     } catch (error) {
       console.error('Failed to fetch topics:', error)
@@ -81,7 +81,7 @@ export const apiService = {
   // Get topics by category
   async getTopicsByCategory(categoryId) {
     try {
-      const response = await api.get(`/topics?category_id=${categoryId}`)
+      const response = await api.get(`/topics/?category_id=${categoryId}`)
       return response.data
     } catch (error) {
       console.error(`Failed to fetch topics for category ${categoryId}:`, error)
@@ -92,7 +92,7 @@ export const apiService = {
   // Get single topic with details (sections, tags)
   async getTopic(topicId) {
     try {
-      const response = await api.get(`/topics/${topicId}`)
+      const response = await api.get(`/topics/${topicId}/`)
       return response.data
     } catch (error) {
       console.error(`Failed to fetch topic ${topicId}:`, error)
@@ -126,7 +126,7 @@ export const apiService = {
   async search(query, limit = 20, signal = null) {
     try {
       const response = await api.get(
-        `/search?q=${encodeURIComponent(query)}&limit=${limit}`,
+        `/search/?q=${encodeURIComponent(query)}&limit=${limit}`,
         { signal }
       )
       return response.data
@@ -143,7 +143,7 @@ export const apiService = {
   // Health check
   async healthCheck() {
     try {
-      const response = await api.get('/categories') // Use categories as health check
+      const response = await api.get('/categories/') // Use categories as health check
       return { status: 'ok', data: response.data }
     } catch (error) {
       console.error('Health check failed:', error)
