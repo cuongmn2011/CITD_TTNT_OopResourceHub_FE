@@ -17,6 +17,7 @@ const API_CONFIGS = {
 // Change this to switch between environments
 // Options: 'local', 'cloudrun'
 const CURRENT_ENV = 'cloudrun'
+// const CURRENT_ENV = 'local'
 
 export const API_CONFIG = API_CONFIGS[CURRENT_ENV]
 export const API_BASE_URL = API_CONFIG.baseURL
