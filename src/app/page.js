@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import Sidebar from '@/components/Sidebar'
 import MainContent from '@/components/MainContent'
 import SearchBar from '@/components/SearchBar'
-import TagFilterPanel from '@/components/TagFilterPanel'
 import { useAppData } from '@/hooks/useAppData'
 import { useSearch } from '@/hooks/useSearch'
 import { apiService } from '@/services/apiService'
@@ -47,19 +46,15 @@ export default function Home() {
   }
 
   const selectTopic = async (topicId, topicTitle, categoryId = null) => {
-    // If categoryId provided (from search), use selectTopicFromSearch
     if (categoryId) {
       await selectTopicFromSearch(topicId, categoryId)
     } else {
-      // Normal topic selection from sidebar
       handleTopicSelect(topicId)
     }
     
-    // Load related topics
     setLoadingRelated(true)
     try {
       const related = await apiService.getRelatedTopics(topicId)
-      // Backend returns List[TopicResponse] directly, not wrapped in {topic: ...}
       setRelatedTopics(Array.isArray(related) ? related : [])
     } catch (err) {
       console.error('Error loading related topics:', err)
@@ -99,41 +94,44 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-bg-color">
-      {/* Header with Category Tabs and Search */}
-      <div className="bg-white border-b border-border-color shadow-sm">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* Search Bar Row */}
-          <div className="flex items-center gap-4 py-3 border-b border-gray-200">
-            <h1 className="font-bold text-xl text-blue-600 whitespace-nowrap">
+      {/* Header Siêu Compact */}
+      <div className="bg-white border-b border-border-color shadow-sm flex-shrink-0 z-20">
+        <div className="max-w-7xl mx-auto px-2"> {/* Giảm px-4 xuống px-2 */}
+          
+          {/* Hàng 1: Logo & Search - Cực gọn */}
+          <div className="flex items-center gap-3 py-1 border-b border-gray-100 h-10"> {/* Cố định chiều cao h-10 */}
+            <h1 className="font-bold text-base text-blue-600 whitespace-nowrap"> {/* Giảm size chữ */}
               OOP Hub
             </h1>
-            <SearchBar
-              query={searchQuery}
-              results={searchResults}
-              selectedIndex={selectedIndex}
-              isSearching={isSearching}
-              onQueryChange={setSearchQuery}
-              onNavigate={navigateResults}
-              onSelect={selectResult}
-              onSelectTopic={selectTopic}
-              onForceSearch={forceSearch}
-              selectedCategory={selectedCategory}
-              onCategoryChange={handleCategorySelect}
-              categories={categories}
-            />
+            <div className="flex-1">
+               <SearchBar
+                query={searchQuery}
+                results={searchResults}
+                selectedIndex={selectedIndex}
+                isSearching={isSearching}
+                onQueryChange={setSearchQuery}
+                onNavigate={navigateResults}
+                onSelect={selectResult}
+                onSelectTopic={selectTopic}
+                onForceSearch={forceSearch}
+                selectedCategory={selectedCategory}
+                onCategoryChange={handleCategorySelect}
+                categories={categories}
+              />
+            </div>
           </div>
           
-          {/* Category Tabs Row */}
-          <div className="flex space-x-1 overflow-x-auto py-2">
+          {/* Hàng 2: Category Tabs - Slim */}
+          <div className="flex space-x-1 overflow-x-auto py-0.5 min-h-[28px]"> {/* Giảm padding cực thấp */}
             {categories.map((category) => (
               <button
                 key={category.id}
                 onClick={() => handleCategorySelect(category)}
                 className={`
-                  px-6 py-3 rounded-lg font-medium text-sm transition-all whitespace-nowrap
+                  px-3 py-0.5 rounded text-[11px] font-medium transition-all whitespace-nowrap border
                   ${selectedCategory?.id === category.id
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-blue-50 border-blue-200 text-blue-700'
+                    : 'bg-transparent border-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-700'
                   }
                 `}
               >
@@ -144,17 +142,13 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Tag Filter Panel */}
-      <TagFilterPanel
-        topics={allTopics}
-        selectedTags={selectedTags}
-        onTagsChange={handleTagsChange}
-      />
-
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           topics={topics}
+          allTopics={allTopics}
+          selectedTags={selectedTags}
+          onTagsChange={handleTagsChange}
           isCollapsed={isSidebarCollapsed}
           onToggle={toggleSidebar}
           onSelectTopic={selectTopic}
