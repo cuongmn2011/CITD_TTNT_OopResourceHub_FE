@@ -101,7 +101,7 @@ export default function Home() {
           {/* Hàng 1: Logo & Search - Cực gọn */}
           <div className="flex items-center gap-3 py-1 border-b border-gray-100 h-10"> {/* Cố định chiều cao h-10 */}
             <h1 className="font-bold text-base text-blue-600 whitespace-nowrap"> {/* Giảm size chữ */}
-              OOP Hub
+              Dev Hub
             </h1>
             <div className="flex-1">
                <SearchBar
