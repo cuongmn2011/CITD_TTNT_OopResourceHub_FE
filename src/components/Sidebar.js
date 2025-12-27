@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { 
   faGraduationCap, 
@@ -9,14 +9,16 @@ import {
   faFilter,
   faChevronDown,
   faChevronRight,
-  faTimes
+  faTimes,
+  faUsers,
+  faIdCard
 } from '@fortawesome/free-solid-svg-icons'
 
 export default function Sidebar({ 
-  topics = [], // Giá trị mặc định an toàn
+  topics = [], 
   allTopics = [],
   selectedTags = [],
-  onTagsChange = () => {}, // Hàm giả để tránh lỗi nếu chưa truyền
+  onTagsChange = () => {}, 
   isCollapsed, 
   onToggle, 
   onSelectTopic, 
@@ -24,8 +26,30 @@ export default function Sidebar({
   loading
 }) {
   const [isFilterExpanded, setIsFilterExpanded] = useState(false)
+  const [showMembers, setShowMembers] = useState(false)
+  const memberRef = useRef(null)
 
-  // Tính toán tags an toàn
+  const members = [
+    { id: '25410026', name: 'Nguyễn Mạnh Cường' },
+    { id: '25410027', name: 'Phạm Văn Cường' },
+    { id: '25410076', name: 'Nguyễn Thanh Kỳ' },
+    { id: '25410111', name: 'Đặng Thiên Phước' },
+    { id: '25410139', name: 'Nguyễn Phước Thọ' },
+  ]
+  const teachers = [
+    { id: 'GV01', name: 'PGS.TS. Nguyễn Đình Hiển' }
+  ]
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (memberRef.current && !memberRef.current.contains(event.target)) {
+        setShowMembers(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [memberRef])
+
   const uniqueTags = useMemo(() => {
     const tags = new Map()
     if (allTopics && Array.isArray(allTopics)) {
@@ -50,7 +74,6 @@ export default function Sidebar({
     }
   }
 
-  // Kiểm tra an toàn cho danh sách hiển thị
   const safeTopics = Array.isArray(topics) ? topics : []
 
   return (
@@ -62,7 +85,7 @@ export default function Sidebar({
       <div className="p-3 border-b border-gray-700 flex items-center justify-between h-[50px] flex-shrink-0">
         <h1 className={`font-bold text-base ${isCollapsed ? 'hidden' : 'block'}`}>
           <FontAwesomeIcon icon={faGraduationCap} className="mr-2 text-blue-400" />
-          OOP Hub
+          G14 AI Hub
         </h1>
         <button 
           onClick={onToggle}
@@ -72,7 +95,7 @@ export default function Sidebar({
         </button>
       </div>
 
-      {/* Filter Section - Chỉ hiện khi mở rộng và có tags */}
+      {/* Filter Section */}
       {!isCollapsed && uniqueTags.length > 0 && (
         <div className="border-b border-gray-700 flex-shrink-0">
           <button 
@@ -178,11 +201,74 @@ export default function Sidebar({
         )}
       </nav>
 
-      {/* Footer */}
+      {/* Footer Interactive */}
       {!isCollapsed && (
-        <div className="p-3 border-t border-gray-700 text-[10px] text-gray-500 flex justify-between items-center bg-gray-900/50 flex-shrink-0">
-          <span>{safeTopics.length} chủ đề</span>
-          <span>v1.1</span>
+        <div 
+          ref={memberRef}
+          className="relative border-t border-gray-700 bg-gray-900/50 flex-shrink-0"
+        >
+          {/* Member List Popup */}
+          {showMembers && (
+            <div className="absolute bottom-full left-0 w-full mb-2 px-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <div className="bg-slate-800 border border-slate-600 rounded-lg shadow-xl p-3">
+                {/* Phần Sinh viên */}
+                <div className="text-[10px] text-gray-400 font-semibold mb-2 uppercase tracking-wider flex items-center gap-2">
+                  <FontAwesomeIcon icon={faUsers} /> Thành viên nhóm
+                </div>
+                <div className="space-y-2">
+                  {members.map(member => (
+                    <div key={member.id} className="flex justify-between items-center text-xs pb-2 border-b border-gray-700 last:border-0 last:pb-0">
+                      <span className="text-gray-200 font-medium">{member.name}</span>
+                      <span className="text-gray-400 font-mono bg-black/20 px-1.5 py-0.5 rounded text-[10px]">
+                        {member.id}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Phần Giáo viên - Đã chỉnh sửa khoảng cách */}
+                <div className="mt-4 pt-3 border-t border-gray-600/50">
+                  <div className="text-[10px] text-gray-400 font-semibold mb-2 uppercase tracking-wider flex items-center gap-2">
+                    <FontAwesomeIcon icon={faGraduationCap} /> Giáo viên hướng dẫn
+                  </div>
+                  <div className="space-y-2">
+                    {teachers.map(teacher => (
+                      <div key={teacher.id} className="flex justify-between items-center text-xs pb-2 border-b border-gray-700 last:border-0 last:pb-0">
+                        <span className="text-blue-300 font-medium">{teacher.name}</span>
+                        {/* Ẩn ID giáo viên hoặc hiển thị icon khác nếu cần */}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Arrow down */}
+              <div className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 bg-slate-800 border-b border-r border-slate-600 rotate-45"></div>
+            </div>
+          )}
+
+          {/* Trigger Button */}
+          <button 
+            onClick={() => setShowMembers(!showMembers)}
+            className={`
+              w-full p-3 flex flex-col gap-1 text-left transition-colors
+              ${showMembers ? 'bg-white/10' : 'hover:bg-white/5'}
+            `}
+          >
+            <div className="flex justify-between w-full text-[10px] text-gray-500">
+               <span>{safeTopics.length} chủ đề</span>
+               <span>v1.2</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="text-[9px] uppercase tracking-wider text-blue-400 font-semibold">
+                 CITD - TTNT - Group 14
+              </div>
+              <FontAwesomeIcon 
+                icon={faUsers} 
+                className={`text-xs transition-transform duration-200 ${showMembers ? 'text-blue-400 scale-110' : 'text-gray-600'}`} 
+              />
+            </div>
+          </button>
         </div>
       )}
     </aside>
