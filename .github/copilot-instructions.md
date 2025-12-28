@@ -17,7 +17,7 @@
 
 - [x] Ensure Documentation is Complete
 
-## ReactJS OOP Resource Hub
+## ReactJS Dev Hub
 Converted existing vanilla HTML/CSS/JS application to modern React with:
 - Sidebar navigation with collapsible categories ✅
 - Search modal with fuzzy matching ✅
