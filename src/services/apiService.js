@@ -112,9 +112,14 @@ export const apiService = {
   },
 
   // Get related topics
-  async getRelatedTopics(topicId) {
+  async getRelatedTopics(topicId, topN = 5) {
     try {
-      const response = await api.get(`/related-topics/${topicId}`)
+      const response = await api.get(`/topics/${topicId}/related?top_n=${topN}`)
+      // New API structure: [{ topic: {...}, score: ... }]
+      // Extract topic from each item
+      if (Array.isArray(response.data)) {
+        return response.data.map(item => item.topic || item).filter(Boolean)
+      }
       return response.data
     } catch (error) {
       console.error(`Failed to fetch related topics for topic ${topicId}:`, error)
