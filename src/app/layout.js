@@ -4,8 +4,8 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'OOP Resource Hub',
-  description: 'Learn Object-Oriented Programming concepts and resources',
+  title: 'Dev Hub',
+  description: 'Kho tài liệu lập trình và phát triển phần mềm',
 }
 
 export default function RootLayout({ children }) {
