@@ -18,6 +18,17 @@ module.exports = {
       },
       width: {
         'sidebar': '320px',
+      },
+      screens: {
+        '3xl': '1920px',
+        '4xl': '2560px',
+        '5xl': '2600px',
+      },
+      maxWidth: {
+        '8xl': '88rem',
+        '9xl': '96rem',
+        '10xl': '104rem',
+        '260': '260rem',
       }
     },
   },

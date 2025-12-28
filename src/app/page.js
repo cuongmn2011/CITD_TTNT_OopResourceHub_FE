@@ -46,6 +46,10 @@ export default function Home() {
   }
 
   const selectTopic = async (topicId, topicTitle, categoryId = null) => {
+    // Clear old related topics immediately
+    setRelatedTopics([])
+    setLoadingRelated(false)
+    
     if (categoryId) {
       await selectTopicFromSearch(topicId, categoryId)
     } else {
@@ -75,6 +79,20 @@ export default function Home() {
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
+
+  // Clear related topics when category changes
+  useEffect(() => {
+    setRelatedTopics([])
+    setLoadingRelated(false)
+  }, [selectedCategory?.id])
+
+  // Clear related topics when topic is cleared
+  useEffect(() => {
+    if (!selectedTopic) {
+      setRelatedTopics([])
+      setLoadingRelated(false)
+    }
+  }, [selectedTopic])
 
   if (loading) {
     return (
