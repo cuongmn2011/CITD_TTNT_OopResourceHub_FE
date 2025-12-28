@@ -45,28 +45,38 @@ export default function Home() {
     setIsSidebarCollapsed(!isSidebarCollapsed)
   }
 
+  // Hàm này chỉ còn nhiệm vụ điều hướng/chọn topic, không gọi API related nữa
   const selectTopic = async (topicId, topicTitle, categoryId = null) => {
-    // Clear old related topics immediately
-    setRelatedTopics([])
-    setLoadingRelated(false)
-    
     if (categoryId) {
       await selectTopicFromSearch(topicId, categoryId)
     } else {
-      handleTopicSelect(topicId)
-    }
-    
-    setLoadingRelated(true)
-    try {
-      const related = await apiService.getRelatedTopics(topicId)
-      setRelatedTopics(Array.isArray(related) ? related : [])
-    } catch (err) {
-      console.error('Error loading related topics:', err)
-      setRelatedTopics([])
-    } finally {
-      setLoadingRelated(false)
+      await handleTopicSelect(topicId)
     }
   }
+
+  // Effect mới: Tự động gọi API Related Topics mỗi khi selectedTopic thay đổi
+  // Xử lý được cả trường hợp click thủ công và auto-select khi đổi category
+  useEffect(() => {
+    const fetchRelatedTopics = async () => {
+      if (!selectedTopic?.id) {
+        setRelatedTopics([])
+        return
+      }
+
+      setLoadingRelated(true)
+      try {
+        const related = await apiService.getRelatedTopics(selectedTopic.id)
+        setRelatedTopics(Array.isArray(related) ? related : [])
+      } catch (err) {
+        console.error('Error loading related topics:', err)
+        setRelatedTopics([])
+      } finally {
+        setLoadingRelated(false)
+      }
+    }
+
+    fetchRelatedTopics()
+  }, [selectedTopic?.id]) // Chạy lại khi ID topic thay đổi
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -80,19 +90,11 @@ export default function Home() {
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  // Clear related topics when category changes
+  // Clear related topics khi đổi category (để tránh hiển thị dữ liệu cũ trong lúc chờ load mới)
   useEffect(() => {
     setRelatedTopics([])
     setLoadingRelated(false)
   }, [selectedCategory?.id])
-
-  // Clear related topics when topic is cleared
-  useEffect(() => {
-    if (!selectedTopic) {
-      setRelatedTopics([])
-      setLoadingRelated(false)
-    }
-  }, [selectedTopic])
 
   if (loading) {
     return (
@@ -114,11 +116,11 @@ export default function Home() {
     <div className="flex flex-col h-screen bg-bg-color">
       {/* Header Siêu Compact */}
       <div className="bg-white border-b border-border-color shadow-sm flex-shrink-0 z-20">
-        <div className="max-w-7xl mx-auto px-2"> {/* Giảm px-4 xuống px-2 */}
+        <div className="max-w-7xl mx-auto px-2">
           
           {/* Hàng 1: Logo & Search - Cực gọn */}
-          <div className="flex items-center gap-3 py-1 border-b border-gray-100 h-10"> {/* Cố định chiều cao h-10 */}
-            <h1 className="font-bold text-base text-blue-600 whitespace-nowrap"> {/* Giảm size chữ */}
+          <div className="flex items-center gap-3 py-1 border-b border-gray-100 h-10">
+            <h1 className="font-bold text-base text-blue-600 whitespace-nowrap">
               Dev Hub
             </h1>
             <div className="flex-1">
@@ -140,7 +142,7 @@ export default function Home() {
           </div>
           
           {/* Hàng 2: Category Tabs - Slim */}
-          <div className="flex space-x-1 overflow-x-auto py-0.5 min-h-[28px]"> {/* Giảm padding cực thấp */}
+          <div className="flex space-x-1 overflow-x-auto py-0.5 min-h-[28px]">
             {categories.map((category) => (
               <button
                 key={category.id}
