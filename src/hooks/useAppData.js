@@ -209,9 +209,9 @@ export function useAppData() {
     console.log(`✅ [handleCategorySelect] State cleared, will trigger loadTopicsByCategory via useEffect`)
   }
 
-  const handleTopicSelect = (topicId) => {
+  const handleTopicSelect = async (topicId) => {
     console.log(`🎯 [handleTopicSelect] User clicked topic: ${topicId}`)
-    loadTopicDetails(topicId)
+    await loadTopicDetails(topicId)
   }
 
   const selectTopicFromSearch = async (topicId, categoryId) => {
